@@ -184,7 +184,7 @@ async function getMoviesFromCurrentLocation() {
     // placeholder for  weather API integration
     const placeholderWeatherType: WeatherType = "rainy";
     currentWeatherText.value =
-      "Weather API placeholder: using rainy weather vibe for now.";
+      "placeholder rainy weather vibe"; // in a real app, this would be set based on the actual weather data
 
     await getMoviesByWeather(placeholderWeatherType);
   } catch {
