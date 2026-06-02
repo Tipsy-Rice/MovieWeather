@@ -176,100 +176,23 @@ function suggestMoviesByWeather(weatherType: WeatherType) {
   getMoviesByWeather(weatherType);
 }
 
-function getCurrentPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject);
-  });
-}
-
 async function getMoviesFromCurrentLocation() {
   loading.value = true;
   error.value = "";
 
   try {
-    const position = await getCurrentPosition();
-
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-
-    const weatherResponse = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
-    );
-
-    if (!weatherResponse.ok) {
-      throw new Error("Could not fetch weather.");
-    }
-
-    const weatherData = await weatherResponse.json();
-    const weatherCode = weatherData.current.weather_code;
-    const temperature = weatherData.current.temperature_2m;
-    const windSpeed = weatherData.current.wind_speed_10m;
-
-    const weatherType = getWeatherTypeFromCode(
-      weatherCode,
-      temperature,
-      windSpeed
-    );
+    // placeholder for  weather API integration
+    const placeholderWeatherType: WeatherType = "rainy";
     currentWeatherText.value =
-      `${weatherType} (${temperature}°C, code ${weatherCode})`;
+      "Weather API placeholder: using rainy weather vibe for now.";
 
-    await getMoviesByWeather(weatherType);
+    await getMoviesByWeather(placeholderWeatherType);
   } catch {
     error.value =
-      "Could not get weather from your location. Try choosing a manually.";
+      "Could not get weather recommendations.";
   } finally {
     loading.value = false;
   }
-}
-
-function getWeatherTypeFromCode(
-  weatherCode: number,
-  temperature: number,
-  windSpeed: number
-): WeatherType {
-  if (temperature >= 25 && weatherCode === 0) {
-    return "hot";
-  }
-
-  if (temperature <= 5) {
-    return "cold";
-  }
-
-  if (windSpeed >= 35) {
-    return "windy";
-  }
-
-  if (weatherCode === 0) {
-    return "sunny";
-  }
-
-  if ([1, 2, 3].includes(weatherCode)) {
-    return "cloudy";
-  }
-
-  if ([45, 48].includes(weatherCode)) {
-    return "foggy";
-  }
-
-  if (
-    [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(weatherCode)
-  ) {
-    return "rainy";
-  }
-
-  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-    return "snowy";
-  }
-
-  if ([95, 96, 99].includes(weatherCode)) {
-    return "stormy";
-  }
-
-  if ([66, 67].includes(weatherCode)) {
-    return "stormy";
-  }
-
-  return "cloudy";
 }
 
 function saveToWatchlist(movie: Movie) {
