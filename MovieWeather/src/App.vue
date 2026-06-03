@@ -1,12 +1,3 @@
-
-<script setup>
-import MovieSearch from "./components/MovieSearch.vue"
-</script>
-
-<template>
-  <MovieSearch />
-</template>
-
 <script setup>
 import { ref } from 'vue'
 import FetchLocation from './components/FetchLocation.vue'
