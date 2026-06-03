@@ -28,13 +28,12 @@ function getPosterUrl(path: string) {
       v-if="movie.poster_path"
       :src="getPosterUrl(movie.poster_path)"
       :alt="movie.title"
-      width="200"
     />
 
     <h3>{{ movie.title }}</h3>
 
     <p>
-      Release date:
+      <strong>Release date:</strong>
       {{ movie.release_date || "Unknown" }}
     </p>
 
@@ -47,3 +46,44 @@ function getPosterUrl(path: string) {
     </button>
   </div>
 </template>
+
+<style scoped>
+.movie-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-card img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  display: block;
+}
+
+.movie-card h3 {
+  margin: 1rem 1rem 0.5rem;
+}
+
+.movie-card p {
+  margin: 0.5rem 1rem;
+  line-height: 1.4;
+}
+
+.movie-card button {
+  margin: auto 1rem 1rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: #008979;
+  color: white;
+  cursor: pointer;
+}
+
+.movie-card button:hover {
+  background: #1f75e8;
+}
+</style>

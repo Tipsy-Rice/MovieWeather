@@ -223,3 +223,105 @@ function saveToWatchlist(movie: Movie) {
     </div>
   </section>
 </template>
+<style scoped>
+.movie-container {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.description {
+  text-align: center;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.control-panel {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.location-panel {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.weather-btn {
+  background: #008979;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+}
+
+.weather-btn:hover {
+  background: #1f75e8;
+}
+
+.search-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.search-section h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.search-form input {
+  width: 300px;
+  padding: 0.8rem;
+}
+
+.search-form button {
+  background: #008979;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+}
+
+.movie-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .control-panel,
+  .search-form {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-form input {
+    width: 100%;
+  }
+
+  .movie-list {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
