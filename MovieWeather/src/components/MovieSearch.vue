@@ -363,24 +363,86 @@ input {
 
 .movie-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
-  padding: 2rem;
 }
 
 @media (max-width: 768px) {
-  .control-panel,
-  .search-form {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .search-form input {
+  .movie-container {
     width: 100%;
+    min-height: 100vh;
   }
 
   .page-title {
-    font-size: 2.8rem;
+    font-size: 2.4rem;
+    margin: 2rem 1rem 1rem;
+  }
+
+  .description {
+    font-size: 1rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .control-panel {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .location-panel {
+    margin-bottom: 2rem;
+  }
+
+  select,
+  input,
+  .weather-btn,
+  .search-form button {
+    width: 90%;
+    max-width: 350px;
+    box-sizing: border-box;
+  }
+
+  .search-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .search-section h2 {
+    font-size: 1.7rem;
+  }
+
+  .search-form {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-form input {
+    width: 90%;
+    max-width: 350px;
+  }
+
+  .movie-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+  }
+
+  .weather-btn,
+  .search-form button {
+    font-size: 1rem;
+    padding: 0.9rem 1rem;
   }
 }
 </style>

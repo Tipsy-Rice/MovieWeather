@@ -60,7 +60,7 @@ function getPosterUrl(path: string) {
 .movie-card img {
   width: 100%;
   height: 350px;
-  object-fit: cover;
+  object-fit:contain;
   display: block;
 }
 
