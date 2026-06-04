@@ -1,34 +1,69 @@
-<script setup>
-import { ref } from 'vue'
-import FetchLocation from './components/FetchLocation.vue'
-import FetchWeather from './components/FetchWeather.vue'
-import MovieSearch from "./components/MovieSearch.vue"
-
-// State for coordinates and reference to FetchLocation component
-const coords = ref(null)
-const locationRef = ref(null)
-
-// Handle location data sent from FetchLocation component
-function handleLocated(newCoords) {
-  coords.value = newCoords
-}
-
-// Parent component (App.vue) will pass coords to FetchWeather component which will fetch weather data
-function requestLocation() {
-  locationRef.value?.getLocation?.()
-}
+<script setup lang="ts">
+import { RouterView, RouterLink } from 'vue-router'
 </script>
-
+ 
 <template>
   <div>
-    <!-- Child components -->
-    <!-- FetchLocation will get coords and send them to parent(App.vue) -->
-    <FetchLocation ref="locationRef" @located="handleLocated" />
-    <!-- Pass coords to FetchWeather component which will fetch weather -->
-    <FetchWeather :coords="coords" @request-location="requestLocation" />
-    <MovieSearch />
+    <nav class="navbar">
+      <RouterLink to="/" class="nav-brand">MovieWeather</RouterLink>
+      <div class="nav-links">
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/watchlist">My Watchlist</RouterLink>
+      </div>
+    </nav>
+ 
+    <main class="main-content">
+      <RouterView />
+    </main>
   </div>
 </template>
-
-<style scoped></style>
-
+ 
+<style scoped>
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #008979;
+  color: white;
+}
+ 
+.nav-brand {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+ 
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+ 
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  opacity: 0.85;
+}
+ 
+.nav-links a:hover,
+.nav-links a.router-link-active {
+  opacity: 1;
+  text-decoration: underline;
+}
+ 
+.main-content {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+ 
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+}
+</style>
