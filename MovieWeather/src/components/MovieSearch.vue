@@ -112,23 +112,79 @@ function suggestMoviesByWeather(weatherType: WeatherType) {
   getMoviesByWeather(weatherType);
 }
 
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+}
+
 async function getMoviesFromCurrentLocation() {
   loading.value = true;
   error.value = "";
 
   try {
-    // TODO: Open-Meteo API 
-    const placeholderWeatherType: WeatherType = "rainy";
+    const position = await getCurrentPosition();
+
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+
+    const weatherResponse = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
+    );
+
+    if (!weatherResponse.ok) {
+      throw new Error("Could not fetch weather.");
+    }
+
+    const weatherData = await weatherResponse.json();
+
+    const weatherCode = weatherData.current.weather_code;
+    const temperature = weatherData.current.temperature_2m;
+    const windSpeed = weatherData.current.wind_speed_10m;
+
+    const weatherType = getWeatherTypeFromCode(
+      weatherCode,
+      temperature,
+      windSpeed
+    );
 
     currentWeatherText.value =
-      "Weather API placeholder: using rainy weather vibe for now.";
+      `Current weather: ${weatherType} (${temperature}°C)`;
 
-    await getMoviesByWeather(placeholderWeatherType);
+    await getMoviesByWeather(weatherType);
   } catch {
-    error.value = "Could not get weather recommendations.";
+    error.value = "Could not get weather from your location.";
   } finally {
     loading.value = false;
   }
+}
+
+function getWeatherTypeFromCode(
+  weatherCode: number,
+  temperature: number,
+  windSpeed: number
+): WeatherType {
+  if (temperature >= 25 && weatherCode === 0) return "hot";
+  if (temperature <= 5) return "cold";
+  if (windSpeed >= 35) return "windy";
+
+  if (weatherCode === 0) return "sunny";
+  if ([1, 2, 3].includes(weatherCode)) return "cloudy";
+  if ([45, 48].includes(weatherCode)) return "foggy";
+
+  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(weatherCode)) {
+    return "rainy";
+  }
+
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+    return "snowy";
+  }
+
+  if ([95, 96, 99].includes(weatherCode)) {
+    return "stormy";
+  }
+
+  return "cloudy";
 }
 
 function saveToWatchlist(movie: Movie) {
@@ -223,90 +279,93 @@ function saveToWatchlist(movie: Movie) {
     </div>
   </section>
 </template>
+
+
 <style scoped>
 .movie-container {
+  text-align: center;
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
+  min-height: 100vh;
 }
 
 .page-title {
-  text-align: center;
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 4rem;
+  margin: 3rem 0 2rem;
+  font-family: Georgia, serif;
 }
 
 .description {
-  text-align: center;
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
+  padding: 1.5rem;
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
 }
 
 .control-panel {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .location-panel {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
-.weather-btn {
+select,
+input {
+  font-size: 1.1rem;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #999;
+}
+
+.weather-btn,
+.search-form button {
   background: #008979;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
 }
 
-.weather-btn:hover {
-  background: #1f75e8;
+.weather-btn:hover,
+.search-form button:hover {
+  background: #006f63;
 }
 
 .search-section {
   background: #f8f9fa;
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin: 2rem 0;
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
 .search-section h2 {
-  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 2rem;
   margin-top: 0;
-  margin-bottom: 1rem;
 }
 
 .search-form {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .search-form input {
-  width: 300px;
-  padding: 0.8rem;
-}
-
-.search-form button {
-  background: #008979;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.8rem 1.5rem;
-  cursor: pointer;
+  width: 350px;
 }
 
 .movie-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 1.5rem;
+  padding: 2rem;
 }
 
 @media (max-width: 768px) {
@@ -320,8 +379,8 @@ function saveToWatchlist(movie: Movie) {
     width: 100%;
   }
 
-  .movie-list {
-    grid-template-columns: 1fr;
+  .page-title {
+    font-size: 2.8rem;
   }
 }
 </style>
