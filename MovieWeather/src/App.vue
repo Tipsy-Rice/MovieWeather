@@ -20,9 +20,8 @@ function requestLocation() {
   locationRef.value?.getLocation();
 }
 </script>
-
 <template>
-  <div>
+  <div class="container py-4">
     <FetchLocation
       ref="locationRef"
       @located="handleLocated"

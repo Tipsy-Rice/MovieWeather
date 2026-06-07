@@ -207,242 +207,112 @@ function saveToWatchlist(movie: Movie) {
 }
 </script>
 
-<template>
-  <section class="movie-container">
-    <h1 class="page-title">MovieWeather</h1>
 
-    <div class="description">
+<template>
+  <section class="container-fluid bg-white min-vh-100 text-center py-5">
+    <h1 class="display-2 mb-4 movie-title">MovieWeather</h1>
+
+    <div class="bg-light p-4 mb-5 fs-5">
       Get movie recommendations based on your local weather or choose a weather type manually.
     </div>
 
+    <div class="row justify-content-center g-3 mb-4">
+      <div class="col-12 col-md-auto">
+        <select
+          v-model="selectedWeatherType"
+          class="form-select form-select-lg"
+        >
+          <option value="sunny">Sunny</option>
+          <option value="rainy">Rainy</option>
+          <option value="cold">Cold</option>
+          <option value="snowy">Snowy</option>
+          <option value="foggy">Foggy</option>
+          <option value="stormy">Stormy</option>
+          <option value="cloudy">Cloudy</option>
+          <option value="hot">Hot</option>
+          <option value="windy">Windy</option>
+        </select>
+      </div>
 
-    <div class="control-panel">
-      <select v-model="selectedWeatherType">
-        <option value="sunny">Sunny</option>
-        <option value="rainy">Rainy</option>
-        <option value="cold">Cold</option>
-        <option value="snowy">Snowy</option>
-        <option value="foggy">Foggy</option>
-        <option value="stormy">Stormy</option>
-        <option value="cloudy">Cloudy</option>
-        <option value="hot">Hot</option>
-        <option value="windy">Windy</option>
-      </select>
-
-      <button
-        class="weather-btn"
-        @click="suggestMoviesByWeather(selectedWeatherType)"
-      >
-        Weather Type
-      </button>
+      <div class="col-12 col-md-auto">
+        <button
+          class="btn btn-success btn-lg w-100"
+          @click="suggestMoviesByWeather(selectedWeatherType)"
+        >
+          Weather Type
+        </button>
+      </div>
     </div>
 
-    <div class="location-panel">
+    <div class="mb-5">
       <button
-        class="weather-btn"
+        class="btn btn-success btn-lg"
         @click="getMoviesFromCurrentLocation"
       >
         Use My Location
       </button>
     </div>
 
-    <p v-if="currentWeatherText">
+    <p v-if="currentWeatherText" class="fs-5">
       {{ currentWeatherText }}
     </p>
 
-    <div class="search-section">
-      <h2>Search manually</h2>
+    <div class="bg-light p-4 mb-4">
+      <h2 class="movie-title mb-4">Search manually</h2>
 
-      <form class="search-form" @submit.prevent="searchMovies">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search for a movie..."
-        />
+      <form
+        class="row justify-content-center g-3"
+        @submit.prevent="searchMovies"
+      >
+        <div class="col-12 col-md-5">
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="form-control form-control-lg"
+            placeholder="Search for a movie..."
+          />
+        </div>
 
-        <button type="submit">
-          Search
-        </button>
+        <div class="col-12 col-md-auto">
+          <button class="btn btn-success btn-lg w-100" type="submit">
+            Search
+          </button>
+        </div>
       </form>
     </div>
 
-    <p v-if="loading">Loading movies...</p>
-    <p v-if="error">{{ error }}</p>
+    <p v-if="loading" class="fs-5">Loading movies...</p>
+    <p v-if="error" class="text-danger fs-5">{{ error }}</p>
 
-    <div class="movie-list">
-      <MovieCard
+    <div class="row g-4 px-3">
+      <div
         v-for="movie in movies"
         :key="movie.id"
-        :movie="movie"
-        @save="saveToWatchlist"
-      />
+        class="col-12 col-sm-6 col-lg-4 col-xl-3"
+      >
+        <MovieCard
+          :movie="movie"
+          @save="saveToWatchlist"
+        />
+      </div>
     </div>
   </section>
 </template>
 
-
 <style scoped>
-.movie-container {
-  text-align: center;
-  background: white;
-  min-height: 100vh;
-}
-
-.page-title {
-  font-size: 4rem;
-  margin: 3rem 0 2rem;
+.movie-title {
   font-family: Georgia, serif;
-}
-
-.description {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  font-size: 1.2rem;
-  margin-bottom: 3rem;
-}
-
-.control-panel {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.location-panel {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 3rem;
-}
-
-select,
-input {
-  font-size: 1.1rem;
-  padding: 1rem;
-  border-radius: 6px;
-  border: 1px solid #999;
-}
-
-.weather-btn,
-.search-form button {
-  background: #008979;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.weather-btn:hover,
-.search-form button:hover {
-  background: #006f63;
-}
-
-.search-section {
-  background: #f8f9fa;
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
-.search-section h2 {
-  font-family: Georgia, serif;
-  font-size: 2rem;
-  margin-top: 0;
-}
-
-.search-form {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.search-form input {
-  width: 350px;
-}
-
-.movie-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
 }
 
 @media (max-width: 768px) {
-  .movie-container {
-    width: 100%;
-    min-height: 100vh;
-  }
-
-  .page-title {
+  .display-2 {
     font-size: 2.4rem;
-    margin: 2rem 1rem 1rem;
   }
-
-  .description {
-    font-size: 1rem;
-    padding: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .control-panel {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .location-panel {
-    margin-bottom: 2rem;
-  }
-
-  select,
-  input,
-  .weather-btn,
-  .search-form button {
-    width: 90%;
-    max-width: 350px;
-    box-sizing: border-box;
-  }
-
-  .search-section {
-    padding: 1.5rem 1rem;
-  }
-
-  .search-section h2 {
-    font-size: 1.7rem;
-  }
-
-  .search-form {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .search-form input {
-    width: 90%;
-    max-width: 350px;
-  }
-
-  .movie-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  padding: 1rem;
-}
 }
 
 @media (max-width: 480px) {
-  .page-title {
+  .display-2 {
     font-size: 2rem;
-  }
-
-  .description {
-    font-size: 0.95rem;
-  }
-
-  .weather-btn,
-  .search-form button {
-    font-size: 1rem;
-    padding: 0.9rem 1rem;
   }
 }
 </style>

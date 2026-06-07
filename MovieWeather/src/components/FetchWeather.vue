@@ -74,14 +74,26 @@ watch(() => props.coords, (newCoords) => {
 })
 </script>
 
+
 <template>
-  <div>
-    <button @click="emit('request-location')">Get My Weather</button>
-
-    <p v-if="error">{{ error }}</p>
-
-    <div v-if="weather">
-      <p>{{ weather.description }}</p>
-    </div>
-  </div>
-</template>
+  <section class="text-center my-4">
+    <button
+      class="btn btn-success btn-lg"
+      @click="emit('request-location')"
+    >
+      Use My Location
+    </button>
+ 
+ 
+    <p v-if="loading" class="mt-3">
+      Finding movie suggestions...
+    </p>
+ 
+ 
+    <p v-if="error" class="mt-3 text-danger">
+      {{ error }}
+    </p>
+  </section>
+ </template>
+ 
+ 
