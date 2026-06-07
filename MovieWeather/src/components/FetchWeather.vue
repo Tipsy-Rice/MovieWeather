@@ -9,16 +9,15 @@ const emit = defineEmits([
   'request-location',
   'weather-loaded'
 ])
-// weather data
+
 const weatherCode = ref(null)
 const temperature = ref(null)
 const windSpeed = ref(null)
 const description = ref('')
-const vibe = ref('')
-const genreNames = ref('')
 const loading = ref(false)
 const error = ref('')
-// Mapping of weather codes to descriptions based on Open-Meteo documentation
+
+// Open-Meteo weather code descriptions
 const weatherDescriptions = {
   0: 'Clear sky',
   1: 'Mainly clear',
@@ -59,89 +58,22 @@ const weatherDescriptions = {
   96: 'Thunderstorm with slight hail',
   99: 'Thunderstorm with heavy hail',
 }
-// Function to get weather description based on code
+
 function getWeatherDescription(code) {
   return weatherDescriptions[code] || `Weather code: ${code}`
 }
-
-function getWeatherVibe(code, temp, wind) {
-  if (temp >= 25 && code === 0) {
-    return {
-      vibe: 'Hot',
-      genres: [28, 12, 878],
-      genreNames: 'Action, Adventure, Science Fiction'
-    }
-  }
-
-  if (wind >= 35) {
-    return {
-      vibe: 'Windy',
-      genres: [12, 14, 28],
-      genreNames: 'Adventure, Fantasy, Action'
-    }
-  }
-
-  if (code === 0) {
-    return {
-      vibe: 'Sunny',
-      genres: [35, 12, 10751],
-      genreNames: 'Comedy, Adventure, Family'
-    }
-  }
-
-  if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
-    return {
-      vibe: 'Rainy',
-      genres: [14, 16, 10751],
-      genreNames: 'Fantasy, Animation, Family'
-    }
-  }
-
-  if ([71, 73, 75, 77, 85, 86].includes(code)) {
-    return {
-      vibe: 'Snowy',
-      genres: [14, 10751, 16],
-      genreNames: 'Fantasy, Family, Animation'
-    }
-  }
-
-  if ([45, 48].includes(code)) {
-    return {
-      vibe: 'Foggy',
-      genres: [9648, 53, 27],
-      genreNames: 'Mystery, Thriller, Horror'
-    }
-  }
-
-  if ([95, 96, 99, 66, 67].includes(code)) {
-    return {
-      vibe: 'Stormy',
-      genres: [53, 28, 80],
-      genreNames: 'Thriller, Action, Crime'
-    }
-  }
-
-  return {
-    vibe: 'Cloudy',
-    genres: [18, 35, 10749],
-    genreNames: 'Drama, Comedy, Romance'
-  }
-}
-// weather data based on coordinates
 
 async function fetchWeather(coords) {
   weatherCode.value = null
   temperature.value = null
   windSpeed.value = null
   description.value = ''
-  vibe.value = ''
-  genreNames.value = ''
   error.value = ''
   loading.value = true
 
   try {
     const { latitude, longitude } = coords
-    // Open-Meteo API
+
     const response = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=celsius`
     )
@@ -157,23 +89,11 @@ async function fetchWeather(coords) {
     windSpeed.value = data.current.wind_speed_10m
     description.value = getWeatherDescription(weatherCode.value)
 
-    const movieWeather = getWeatherVibe(
-      weatherCode.value,
-      temperature.value,
-      windSpeed.value
-    )
-
-    vibe.value = movieWeather.vibe
-    genreNames.value = movieWeather.genreNames
-
     emit('weather-loaded', {
       weatherCode: weatherCode.value,
       temperature: temperature.value,
       windSpeed: windSpeed.value,
-      description: description.value,
-      vibe: movieWeather.vibe,
-      genres: movieWeather.genres,
-      genreNames: movieWeather.genreNames
+      description: description.value
     })
   } catch {
     error.value = 'Could not fetch weather.'

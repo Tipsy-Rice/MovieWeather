@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import MovieCard from './MovieCard.vue'
-//props from App.vue
+
 const props = defineProps({
   weatherCode: Number,
   weatherDescription: String,
@@ -12,55 +12,71 @@ const searchQuery = ref('')
 const movies = ref([])
 const loading = ref(false)
 const error = ref('')
+const selectedWeatherType = ref('rainy')
 
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
-// Mapping of weather codes to TMDB genre IDs
+
 const weatherCodeGenreMap = {
-// Sunny / Clear
-  0: [35, 12, 10751], // Comedy, Adventure, Family
-  1: [35, 12, 10751], 
+  // Sunny / Clear
+  0: [35, 12, 10751],
+  1: [35, 12, 10751],
 
+  // Cloudy
+  2: [18, 35, 10749],
+  3: [18, 9648, 10749],
 
-// Cloudy
-  2: [18, 35, 10749], // Drama, Comedy, Romance
-  3: [18, 9648, 10749], // Drama, Mystery, Romance
-// Foggy
-  45: [9648, 53, 27], // Mystery, Thriller, Horror
-  48: [9648, 53, 27], // Mystery, Thriller, Horror
+  // Foggy
+  45: [9648, 53, 27],
+  48: [9648, 53, 27],
 
+  // Drizzle
+  51: [14, 16, 10751],
+  53: [14, 16, 10751],
+  55: [14, 16, 10751],
 
-// Drizzle
-  51: [14, 16, 10751], // Fantasy, Animation, Family
-  53: [14, 16, 10751], 
-  55: [14, 16, 10751], 
+  // Freezing drizzle
+  56: [53, 9648, 27],
+  57: [53, 9648, 27],
+
   // Rain
-  61: [14, 16, 10751], // Fantasy, Animation, Family
-  63: [14, 16, 10751], 
-  65: [53, 80, 27], // Thriller, Crime, Horror
-// Rain showers
-  80: [14, 16, 10751], // Fantasy, Animation, Family
-  81: [14, 16, 10751], 
-  82: [53, 80, 27], // Thriller, Crime, Horror
-// Freezing rain
-  66: [53, 9648, 27], // Thriller, Mystery, Horror
-  67: [53, 9648, 27], 
-// Thunderstorms
-  95: [53, 28, 80], // Thriller, Action, Crime
-  96: [53, 28, 80], 
-  99: [53, 28, 80], 
+  61: [14, 16, 10751],
+  63: [14, 16, 10751],
+  65: [53, 80, 27],
 
+  // Freezing rain
+  66: [53, 9648, 27],
+  67: [53, 9648, 27],
 
-// Freezing drizzle
-  56: [53, 9648, 27], // Thriller, Mystery, Horror
-  57: [53, 9648, 27], 
-// Snow
-  71: [14, 10751, 16], // Fantasy, Family, Animation
-  73: [14, 10751, 16], 
-  75: [14, 10751, 16], 
-  77: [14, 10751, 16], 
-// Snow showers
-  85: [14, 10751, 16], // Fantasy, Family, Animation
-  86: [14, 10751, 16], 
+  // Snow
+  71: [14, 10751, 16],
+  73: [14, 10751, 16],
+  75: [14, 10751, 16],
+  77: [14, 10751, 16],
+
+  // Rain showers
+  80: [14, 16, 10751],
+  81: [14, 16, 10751],
+  82: [53, 80, 27],
+
+  // Snow showers
+  85: [14, 10751, 16],
+  86: [14, 10751, 16],
+
+  // Thunderstorms
+  95: [53, 28, 80],
+  96: [53, 28, 80],
+  99: [53, 28, 80],
+}
+
+const manualWeatherGenreMap = {
+  sunny: [35, 12, 10751],
+  cloudy: [18, 35, 10749],
+  rainy: [14, 16, 10751],
+  snowy: [14, 10751, 16],
+  foggy: [9648, 53, 27],
+  stormy: [53, 28, 80],
+  hot: [28, 12, 878],
+  windy: [12, 14, 28],
 }
 
 async function searchMovies() {
@@ -96,8 +112,7 @@ async function searchMovies() {
   }
 }
 
-async function getMoviesByWeatherCode(weatherCode) {
-  const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
+async function getMoviesByGenres(genres) {
   const genreIds = genres.join(',')
 
   loading.value = true
@@ -126,10 +141,19 @@ async function getMoviesByWeatherCode(weatherCode) {
     loading.value = false
   }
 }
-//
+
+function getMoviesByWeatherCode(weatherCode) {
+  const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
+  getMoviesByGenres(genres)
+}
+
+function getMoviesByManualWeather() {
+  const genres = manualWeatherGenreMap[selectedWeatherType.value]
+  getMoviesByGenres(genres)
+}
+
 function saveToWatchlist(movie) {
   const savedMovies = JSON.parse(localStorage.getItem('watchlist') || '[]')
-
   const exists = savedMovies.some((savedMovie) => savedMovie.id === movie.id)
 
   if (!exists) {
@@ -149,25 +173,42 @@ watch(
 </script>
 
 <template>
-  <section class="container-fluid bg-white min-vh-100 text-center py-5">
-    <h1 class="display-2 mb-4 movie-title">MovieWeather</h1>
-
-    <div class="bg-light p-4 mb-5 fs-5">
-      Get movie recommendations based on your local weather.
+  <section class="container-fluid bg-white text-center py-4">
+    <div class="bg-light p-4 mb-4 fs-5">
+      Get movie recommendations based on your local weather or choose a weather type manually.
     </div>
 
-    <p
-      v-if="weatherCode !== null && weatherCode !== undefined"
-      class="fs-5"
-    >
-      Current weather: {{ weatherDescription }}
-      <br>
-      Temperature: {{ temperature }}°C
-      <br>
-    </p>
+    <div class="row justify-content-center g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <select
+          v-model="selectedWeatherType"
+          class="form-select form-select-lg"
+        >
+          <option value="sunny">Sunny</option>
+          <option value="cloudy">Cloudy</option>
+          <option value="rainy">Rainy</option>
+          <option value="snowy">Snowy</option>
+          <option value="foggy">Foggy</option>
+          <option value="stormy">Stormy</option>
+          <option value="hot">Hot</option>
+          <option value="windy">Windy</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-auto">
+        <button
+          class="btn btn-success btn-lg w-100"
+          @click="getMoviesByManualWeather"
+        >
+          Choose Weather Type
+        </button>
+      </div>
+    </div>
 
     <div class="bg-light p-4 mb-4">
-      <h2 class="movie-title mb-4">Search manually</h2>
+      <h2 class="movie-title mb-4">
+        Search manually
+      </h2>
 
       <form
         class="row justify-content-center g-3"
@@ -217,6 +258,9 @@ watch(
 </template>
 
 <style scoped>
+.movie-title {
+  font-family: Georgia, serif;
+}
 
 @media (max-width: 768px) {
   .display-2 {

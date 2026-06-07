@@ -7,7 +7,7 @@ import MovieSearch from './components/MovieSearch.vue'
 const coords = ref(null)
 const locationRef = ref(null)
 
-const movieGenres = ref([])
+const weatherCode = ref(null)
 const weatherDescription = ref('')
 const temperature = ref(null)
 
@@ -20,7 +20,7 @@ function requestLocation() {
 }
 
 function handleWeatherLoaded(weather) {
-  movieGenres.value = weather.genres
+  weatherCode.value = weather.weatherCode
   weatherDescription.value = weather.description
   temperature.value = weather.temperature
 }
@@ -29,7 +29,7 @@ function handleWeatherLoaded(weather) {
 <template>
   <main class="container-fluid bg-white min-vh-100 text-center py-5">
     <h1 class="display-2 mb-4 movie-title">
-      MovieWeathe.   r
+      MovieWeather
     </h1>
 
     <FetchLocation
@@ -44,7 +44,7 @@ function handleWeatherLoaded(weather) {
     />
 
     <MovieSearch
-      :genres="movieGenres"
+      :weather-code="weatherCode"
       :weather-description="weatherDescription"
       :temperature="temperature"
     />
