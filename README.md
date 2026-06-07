@@ -92,9 +92,11 @@ Summary
 Vue offered the right balance of structure and simplicity for a three-person team building a focused, API-driven web app. Its gentle learning curve and excellent documentation made it possible to get productive quickly while still writing clean, maintainable code.
 
 ----------------------------------------------------
-APIs Used
+APIs Used:
+
 Open-Meteo
 Free, open-source weather API. No API key required. Used to fetch current temperature and weather code based on latitude and longitude.
+
 TMDB : The Movie Database
 Provides movie data including titles, genres, posters, and descriptions. Used to fetch movie recommendations by genre and to support manual title search. Requires a free API token.
 
