@@ -3,12 +3,17 @@ defineProps({
   movie: Object
 })
 
-const emit = defineEmits(['save'])
+const emit = defineEmits(['save', 'remove'])
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 
 function getPosterUrl(path) {
   return `${IMAGE_BASE_URL}${path}`
+}
+
+function isInWatchlist(movieId) {
+  const saved = JSON.parse(localStorage.getItem('watchlist') || '[]')
+  return saved.some(m => m.id === movieId)
 }
 </script>
 
@@ -35,12 +40,21 @@ function getPosterUrl(path) {
         {{ movie.overview || 'No description available.' }}
       </p>
 
-      <button
-        class="btn btn-success mt-auto"
-        @click="emit('save', movie)"
-      >
-        Save to Watchlist
-      </button>
+  <button
+  v-if="!isInWatchlist(movie.id)"
+  class="btn btn-success mt-auto"
+  @click="emit('save', movie)"
+>
+  Save to Watchlist
+</button>
+
+<button
+  v-else
+  class="btn btn-danger mt-auto"
+  @click="emit('remove', movie)"
+>
+  Remove from Watchlist
+</button>
     </div>
   </div>
 </template>

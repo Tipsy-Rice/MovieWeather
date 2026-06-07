@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 import MovieCard from './MovieCard.vue'
-import FetchLocation from './FetchLocation.vue'
 
 const props = defineProps({
   coords: Object,
@@ -10,11 +9,15 @@ const props = defineProps({
   temperature: Number,
 })
 
+const emit = defineEmits(['request-location'])
+
+const activeMode = ref(null)
 const searchQuery = ref('')
 const movies = ref([])
 const loading = ref(false)
 const error = ref('')
 const selectedWeatherType = ref('')
+const activeTab = ref('location') 
 
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
 // Mapping of Open-Meteo weather codes to TMDb genre IDs
@@ -86,7 +89,7 @@ async function searchMovies() {
     error.value = 'Please enter a movie title.'
     return
   }
-
+  activeMode.value = 'search' 
   loading.value = true
   error.value = ''
 
@@ -144,11 +147,13 @@ async function getMoviesByGenres(genres) {
   }
 }
 function getMoviesByWeatherCode(weatherCode) {
+  activeMode.value = 'location'
   const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
   getMoviesByGenres(genres)
 }
 
 function getMoviesByManualWeather() {
+  activeMode.value = 'manual' 
   const genres = manualWeatherGenreMap[selectedWeatherType.value]
   getMoviesByGenres(genres)
 }
@@ -161,6 +166,13 @@ function saveToWatchlist(movie) {
     savedMovies.push(movie)
     localStorage.setItem('watchlist', JSON.stringify(savedMovies))
   }
+   movies.value = [...movies.value] 
+}
+
+function removeFromWatchlist(movie) {
+  const saved = JSON.parse(localStorage.getItem('watchlist') || '[]')
+  localStorage.setItem('watchlist', JSON.stringify(saved.filter(m => m.id !== movie.id)))
+  movies.value = [...movies.value]
 }
 
 watch(
@@ -174,30 +186,70 @@ watch(
 </script>
 
 <template>
-  <section class="container-fluid bg-white text-center py-4">
-    <div class="p-4 mb-4 fs-5">
-      <h3>
-        Get movie recommendations based on your weather
-      </h3>
-    </div>
+ <section class="container-fluid bg-white text-center py-4">
+  <div class="p-4 mb-2">
+    <h3>Get movie recommendations based on weather!</h3>
+    <h3>Pick one of the three methods below:</h3>
+  </div>
 
-    <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
-      <p class="mb-1 fw-semibold">
+  <!-- Tabs -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="tab-bar">
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'location' }"
+        @click="activeTab = 'location'"
+      >
+        My Location
+      </button>
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'manual' }"
+        @click="activeTab = 'manual'"
+      >
         Weather 
-      </p>
-
-      <p v-if="weatherDescription" class="mb-1">
-        Type: {{ weatherDescription }}
-      </p>
-
+      </button>
+      <button
+        class="tab-btn"
+        :class="{ active: activeTab === 'search' }"
+        @click="activeTab = 'search'"
+      >
+        Movie Title
+      </button>
     </div>
+  </div>
 
-    <div class="row justify-content-center g-3 mb-4">
-      <div class="col-12 col-md-4">
-        <select
-          v-model="selectedWeatherType"
-          class="form-select form-select-lg"
+  <!-- Tab: My Location -->
+  <section class="container-fluid bg-white text-center py-4">
+    <div v-if="activeTab === 'location'" class="tab-content">
+      
+      <div class="mb-3">
+        <button
+          class="btn btn-success btn-lg"
+          @click="emit('request-location')"
         >
+          Use My Location
+        </button>
+      </div>
+
+      <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
+        <p class="mb-1 fw-semibold">Your current weather:</p>
+        <p v-if="weatherDescription" class="mb-0">
+          {{ weatherDescription }}
+        </p>
+      </div>
+      <p v-else class="text-muted fst-italic">
+        Press "Use My Location" above to get started.
+      </p>
+    </div>
+    
+  </section>
+
+  <!-- Tab: Pick Weather -->
+  <div v-if="activeTab === 'manual'" class="tab-content">
+    <div class="row justify-content-center g-3">
+      <div class="col-12 col-md-4">
+        <select v-model="selectedWeatherType" class="form-select form-select-lg">
           <option value="" disabled selected hidden>Choose a weather...</option>
           <option value="sunny">Sunny</option>
           <option value="cloudy">Cloudy</option>
@@ -209,67 +261,49 @@ watch(
           <option value="windy">Windy</option>
         </select>
       </div>
-
       <div class="col-12 col-md-auto">
-        <button
-          class="btn btn-success btn-lg w-100"
-          @click="getMoviesByManualWeather"
-        >
-          Choose Weather Type
+        <button class="btn btn-success btn-lg w-100" @click="getMoviesByManualWeather">
+          Search by Weather
         </button>
       </div>
     </div>
+  </div>
 
-    <div class="p-4 mb-4">
-      <h3 class="movie-title mb-4">
-        Or just Search movies
-      </h3>
-
-      <form
-        class="row justify-content-center g-3"
-        @submit.prevent="searchMovies"
-      >
-        <div class="col-12 col-md-5">
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="form-control form-control-lg"
-            placeholder="Search for a movie..."
-          >
-        </div>
-
-        <div class="col-12 col-md-auto">
-          <button
-            class="btn btn-success btn-lg w-100"
-            type="submit"
-          >
-            Search
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <p v-if="loading" class="fs-5">
-      Loading
-    </p>
-
-    <p v-if="error" class="text-danger fs-5">
-      {{ error }}
-    </p>
-
-    <div class="row g-4 px-3">
-      <div
-        v-for="movie in movies"
-        :key="movie.id"
-        class="col-12 col-sm-6 col-lg-4 col-xl-3"
-      >
-        <MovieCard
-          :movie="movie"
-          @save="saveToWatchlist"
-        />
+  <div v-if="activeTab === 'search'" class="tab-content">
+    <form class="row justify-content-center g-3" @submit.prevent="searchMovies">
+      <div class="col-12 col-md-5">
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="Search for a movie..."
+        >
       </div>
+      <div class="col-12 col-md-auto">
+        <button class="btn btn-success btn-lg w-100" type="submit">
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <p v-if="loading" class="fs-5 mt-4">Loading...</p>
+  <p v-if="error" class="text-danger fs-5 mt-2">{{ error }}</p>
+
+  <div class="row g-4 px-3 mt-2">
+    <div
+      v-for="movie in movies"
+      :key="movie.id"
+      class="col-12 col-sm-6 col-lg-4 col-xl-3"
+    >
+      <MovieCard
+        :movie="movie"
+        @save="saveToWatchlist"
+        @remove="removeFromWatchlist"
+      />
     </div>
-  </section>
+  </div>
+</section>
 </template>
 
 <style scoped>
@@ -278,20 +312,52 @@ h3 {
 }
 
 .weather-summary {
-  max-width: 15%;
+  max-width: 300px;
   margin-left: auto;
   margin-right: auto;
 }
 
-@media (max-width: 768px) {
-  .display-2 {
-    font-size: 2.4rem;
-  }
+.tab-bar {
+  display: flex;
+  border: 1.5px solid #008979;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-@media (max-width: 480px) {
-  .display-2 {
-    font-size: 2rem;
+.tab-btn {
+  flex: 1;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  background: white;
+  color: #008979;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-btn:not(:last-child) {
+  border-right: 1.5px solid #008979;
+}
+
+.tab-btn.active {
+  background: #008979;
+  color: white;
+  font-weight: 600;
+}
+
+.tab-btn:hover:not(.active) {
+  background: #e8f7f5;
+}
+
+.tab-content {
+  min-height: 100px;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .tab-btn {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.9rem;
   }
 }
 </style>
