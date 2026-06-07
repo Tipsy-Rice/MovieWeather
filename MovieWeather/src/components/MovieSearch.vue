@@ -15,7 +15,7 @@ const error = ref('')
 const selectedWeatherType = ref('rainy')
 
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
-
+// Mapping of Open-Meteo weather codes to TMDb genre IDs
 const weatherCodeGenreMap = {
   // Sunny / Clear
   0: [35, 12, 10751],
@@ -67,7 +67,7 @@ const weatherCodeGenreMap = {
   96: [53, 28, 80],
   99: [53, 28, 80],
 }
-
+// Manual mapping for weather descriptions to genres (for when user selects weather type instead of using weather code)
 const manualWeatherGenreMap = {
   sunny: [35, 12, 10751],
   cloudy: [18, 35, 10749],
@@ -78,7 +78,7 @@ const manualWeatherGenreMap = {
   hot: [28, 12, 878],
   windy: [12, 14, 28],
 }
-
+//basic search function to search movies by title 
 async function searchMovies() {
   if (!searchQuery.value.trim()) {
     error.value = 'Please enter a movie title.'
@@ -111,7 +111,7 @@ async function searchMovies() {
     loading.value = false
   }
 }
-
+// fetch movies based on genre ids
 async function getMoviesByGenres(genres) {
   const genreIds = genres.join(',')
 
@@ -141,7 +141,6 @@ async function getMoviesByGenres(genres) {
     loading.value = false
   }
 }
-
 function getMoviesByWeatherCode(weatherCode) {
   const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
   getMoviesByGenres(genres)
@@ -175,7 +174,7 @@ watch(
 <template>
   <section class="container-fluid bg-white text-center py-4">
     <div class="bg-light p-4 mb-4 fs-5">
-      Get movie recommendations based on your local weather or choose a weather type manually.
+      Get movie recommendations based on your weather
     </div>
 
     <div class="row justify-content-center g-3 mb-4">
@@ -207,7 +206,7 @@ watch(
 
     <div class="bg-light p-4 mb-4">
       <h2 class="movie-title mb-4">
-        Search manually
+        Or just Search movies
       </h2>
 
       <form
@@ -235,7 +234,7 @@ watch(
     </div>
 
     <p v-if="loading" class="fs-5">
-      Loading movies...
+      Loading
     </p>
 
     <p v-if="error" class="text-danger fs-5">

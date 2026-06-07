@@ -4,21 +4,22 @@ import FetchLocation from './components/FetchLocation.vue'
 import FetchWeather from './components/FetchWeather.vue'
 import MovieSearch from './components/MovieSearch.vue'
 
-const coords = ref(null)
-const locationRef = ref(null)
+const coords = ref(null)      // { latitude: Number, longitude: Number }
+const locationRef = ref(null) // reference to FetchLocation component
 
-const weatherCode = ref(null)
-const weatherDescription = ref('')
+const weatherCode = ref(null) // weather code from Open-Meteo API
+const weatherDescription = ref('') // ref for weather description string (sunny, rainy....etc)
+
 const temperature = ref(null)
 
 function handleLocated(newCoords) {
   coords.value = newCoords
 }
-
+// call the getLocation method in FetchLocation
 function requestLocation() {
   locationRef.value?.getLocation()
 }
-
+// calls handleWeatherLoaded when weather is loaded in FetchWeather
 function handleWeatherLoaded(weather) {
   weatherCode.value = weather.weatherCode
   weatherDescription.value = weather.description
@@ -44,7 +45,7 @@ function handleWeatherLoaded(weather) {
     />
 
     <MovieSearch
-      :weather-code="weatherCode"
+      :weather-code="weatherCode" 
       :weather-description="weatherDescription"
       :temperature="temperature"
     />
