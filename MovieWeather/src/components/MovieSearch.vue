@@ -10,8 +10,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['request-location'])
-
-const activeMode = ref(null)
 const searchQuery = ref('')
 const movies = ref([])
 const loading = ref(false)
@@ -89,7 +87,6 @@ async function searchMovies() {
     error.value = 'Please enter a movie title.'
     return
   }
-  activeMode.value = 'search' 
   loading.value = true
   error.value = ''
 
@@ -147,13 +144,11 @@ async function getMoviesByGenres(genres) {
   }
 }
 function getMoviesByWeatherCode(weatherCode) {
-  activeMode.value = 'location'
   const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
   getMoviesByGenres(genres)
 }
 
 function getMoviesByManualWeather() {
-  activeMode.value = 'manual' 
   const genres = manualWeatherGenreMap[selectedWeatherType.value]
   getMoviesByGenres(genres)
 }

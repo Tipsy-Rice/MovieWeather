@@ -56,12 +56,6 @@ VITE_TMDB_TOKEN=your_tmdb_read_access_token_here
 Run locally:
 npm run dev
 
-Build for production:
-npm run build
-
-Run unit tests:
-npm run test:unit
-
 ----------------------------------------------------
 Project Structure
 
@@ -82,7 +76,6 @@ src/
 
 ----------------------------------------------------
 VUE vs REACT
-
 We chose to use Vue over React. When comparing the different frameworks and libraries, we narrowed it down to either Vue or React, and ultimately went with Vue. This was due to the advantages we felt Vue offered compared to Reactsince it's better structured for smaller projects, its documentation is considered among the best for frontend tools, and the learning curve is low which we found to be the most important factor for us, as we had other commitments alongside this project. [strapi.io/blog/vue-vs-react]
 
 VUE vs ANGULAR
