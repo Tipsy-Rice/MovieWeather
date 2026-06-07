@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { ref, watchEffect } from 'vue'
+
+const props = defineProps({
   movie: Object
 })
 
@@ -14,6 +16,24 @@ function getPosterUrl(path) {
 function isInWatchlist(movieId) {
   const saved = JSON.parse(localStorage.getItem('watchlist') || '[]')
   return saved.some(m => m.id === movieId)
+}
+
+const saved = ref(false)
+
+watchEffect(() => {
+  if (props.movie?.id) {
+    saved.value = isInWatchlist(props.movie.id)
+  }
+})
+
+function handleSave() {
+  emit('save', props.movie)
+  saved.value = true
+}
+
+function handleRemove() {
+  emit('remove', props.movie)
+  saved.value = false
 }
 </script>
 
@@ -41,20 +61,20 @@ function isInWatchlist(movieId) {
       </p>
 
   <button
-  v-if="!isInWatchlist(movie.id)"
-  class="btn btn-success mt-auto"
-  @click="emit('save', movie)"
->
-  Save to Watchlist
-</button>
+    v-if="!saved"
+    class="btn btn-success mt-auto"
+    @click="handleSave"
+  >
+    Save to Watchlist
+  </button>
 
-<button
-  v-else
-  class="btn btn-danger mt-auto"
-  @click="emit('remove', movie)"
->
-  Remove from Watchlist
-</button>
+  <button
+    v-else
+    class="btn btn-danger mt-auto"
+    @click="handleRemove"
+  >
+    Remove from Watchlist
+  </button>
     </div>
   </div>
 </template>
