@@ -114,17 +114,6 @@ watch(
 
 <template>
   <section class="text-center my-4">
-    <button
-      class="btn btn-success btn-lg "
-      @click="emit('request-location')"
-    >
-      Use My Location
-    </button>
-
-    <p v-if="loading" class="mt-3">
-      Finding movie suggestions...
-    </p>
-
     <p v-if="error" class="mt-3 text-danger">
       {{ error }}
     </p>

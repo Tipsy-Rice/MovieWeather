@@ -34,6 +34,7 @@ function handleWeatherLoaded(data) {
       :weather-code="weatherData?.weatherCode"
       :weather-description="weatherData?.description"
       :temperature="weatherData?.temperature"
+      @request-location="requestLocation"
     />
   </div>
 </template>

@@ -9,6 +9,8 @@ const props = defineProps({
   temperature: Number,
 })
 
+const emit = defineEmits(['request-location'])
+
 const activeMode = ref(null)
 const searchQuery = ref('')
 const movies = ref([])
@@ -218,17 +220,30 @@ watch(
   </div>
 
   <!-- Tab: My Location -->
-  <div v-if="activeTab === 'location'" class="tab-content">
-    <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
-      <p class="mb-1 fw-semibold">Your current weather:</p>
-      <p v-if="weatherDescription" class="mb-0">
-        {{ weatherDescription }}
+  <section class="container-fluid bg-white text-center py-4">
+    <div v-if="activeTab === 'location'" class="tab-content">
+      
+      <div class="mb-3">
+        <button
+          class="btn btn-success btn-lg"
+          @click="emit('request-location')"
+        >
+          Use My Location
+        </button>
+      </div>
+
+      <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
+        <p class="mb-1 fw-semibold">Your current weather:</p>
+        <p v-if="weatherDescription" class="mb-0">
+          {{ weatherDescription }}
+        </p>
+      </div>
+      <p v-else class="text-muted fst-italic">
+        Press "Use My Location" above to get started.
       </p>
     </div>
-    <p v-else class="text-muted fst-italic">
-      Press "Use My Location" above to get started.
-    </p>
-  </div>
+    
+  </section>
 
   <!-- Tab: Pick Weather -->
   <div v-if="activeTab === 'manual'" class="tab-content">
