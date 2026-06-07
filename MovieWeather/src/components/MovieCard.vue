@@ -1,89 +1,53 @@
-<script setup lang="ts">
-type Movie = {
-  id: number;
-  title: string;
-  overview: string;
-  release_date: string;
-  poster_path: string | null;
-};
+<script setup>
+defineProps({
+  movie: Object
+})
 
-defineProps<{
-  movie: Movie;
-}>();
+const emit = defineEmits(['save'])
 
-const emit = defineEmits<{
-  save: [movie: Movie];
-}>();
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
-
-function getPosterUrl(path: string) {
-  return `${IMAGE_BASE_URL}${path}`;
+function getPosterUrl(path) {
+  return `${IMAGE_BASE_URL}${path}`
 }
 </script>
 
 <template>
-  <div class="movie-card">
+  <div class="card h-100 shadow-sm">
     <img
       v-if="movie.poster_path"
       :src="getPosterUrl(movie.poster_path)"
       :alt="movie.title"
-    />
+      class="card-img-top movie-poster"
+    >
 
-    <h3>{{ movie.title }}</h3>
+    <div class="card-body d-flex flex-column">
+      <h3 class="card-title h5">
+        {{ movie.title }}
+      </h3>
 
-    <p>
-      <strong>Release date:</strong>
-      {{ movie.release_date || "Unknown" }}
-    </p>
+      <p class="card-text">
+        <strong>Release date:</strong>
+        {{ movie.release_date || 'Unknown' }}
+      </p>
 
-    <p>
-      {{ movie.overview || "No description available." }}
-    </p>
+      <p class="card-text">
+        {{ movie.overview || 'No description available.' }}
+      </p>
 
-    <button @click="emit('save', movie)">
-      Save to Watchlist
-    </button>
+      <button
+        class="btn btn-success mt-auto"
+        @click="emit('save', movie)"
+      >
+        Save to Watchlist
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.movie-card {
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  display: flex;
-  flex-direction: column;
-}
-
-.movie-card img {
-  width: 100%;
+.movie-poster {
   height: 350px;
-  object-fit:contain;
-  display: block;
-}
-
-.movie-card h3 {
-  margin: 1rem 1rem 0.5rem;
-}
-
-.movie-card p {
-  margin: 0.5rem 1rem;
-  line-height: 1.4;
-}
-
-.movie-card button {
-  margin: auto 1rem 1rem;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 6px;
-  background: #008979;
-  color: white;
-  cursor: pointer;
-}
-
-.movie-card button:hover {
-  background: #1f75e8;
+  object-fit: contain;
 }
 </style>
