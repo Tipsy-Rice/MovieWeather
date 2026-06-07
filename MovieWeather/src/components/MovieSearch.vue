@@ -188,7 +188,7 @@ watch(
 <template>
  <section class="container-fluid bg-white text-center py-4">
   <div class="p-4 mb-2">
-    <h3>Get movie recommendations based on weather </h3>
+    <h3>Get movie recommendations based on weather!</h3>
     <h3>Pick one of the three methods below:</h3>
   </div>
 
