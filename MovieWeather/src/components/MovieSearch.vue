@@ -1,8 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue'
 import MovieCard from './MovieCard.vue'
+import FetchLocation from './FetchLocation.vue'
 
 const props = defineProps({
+  coords: Object,
   weatherCode: Number,
   weatherDescription: String,
   temperature: Number,
@@ -12,7 +14,7 @@ const searchQuery = ref('')
 const movies = ref([])
 const loading = ref(false)
 const error = ref('')
-const selectedWeatherType = ref('rainy')
+const selectedWeatherType = ref('')
 
 const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
 // Mapping of Open-Meteo weather codes to TMDb genre IDs
@@ -173,8 +175,21 @@ watch(
 
 <template>
   <section class="container-fluid bg-white text-center py-4">
-    <div class="bg-light p-4 mb-4 fs-5">
-      Get movie recommendations based on your weather
+    <div class="p-4 mb-4 fs-5">
+      <h3>
+        Get movie recommendations based on your weather
+      </h3>
+    </div>
+
+    <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
+      <p class="mb-1 fw-semibold">
+        Weather 
+      </p>
+
+      <p v-if="weatherDescription" class="mb-1">
+        Type: {{ weatherDescription }}
+      </p>
+
     </div>
 
     <div class="row justify-content-center g-3 mb-4">
@@ -183,6 +198,7 @@ watch(
           v-model="selectedWeatherType"
           class="form-select form-select-lg"
         >
+          <option value="" disabled selected hidden>Choose a weather...</option>
           <option value="sunny">Sunny</option>
           <option value="cloudy">Cloudy</option>
           <option value="rainy">Rainy</option>
@@ -204,10 +220,10 @@ watch(
       </div>
     </div>
 
-    <div class="bg-light p-4 mb-4">
-      <h2 class="movie-title mb-4">
+    <div class="p-4 mb-4">
+      <h3 class="movie-title mb-4">
         Or just Search movies
-      </h2>
+      </h3>
 
       <form
         class="row justify-content-center g-3"
@@ -257,8 +273,14 @@ watch(
 </template>
 
 <style scoped>
-.movie-title {
+h3 {
   font-family: Georgia, serif;
+}
+
+.weather-summary {
+  max-width: 15%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 768px) {
