@@ -1,327 +1,297 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import MovieCard from "./MovieCard.vue";
+<script setup>
+import { ref, watch } from 'vue'
+import MovieCard from './MovieCard.vue'
+import FetchLocation from './FetchLocation.vue'
 
-type WeatherType =
-  | "sunny"
-  | "rainy"
-  | "cold"
-  | "snowy"
-  | "foggy"
-  | "stormy"
-  | "cloudy"
-  | "hot"
-  | "windy";
+const props = defineProps({
+  coords: Object,
+  weatherCode: Number,
+  weatherDescription: String,
+  temperature: Number,
+})
 
-type Movie = {
-  id: number;
-  title: string;
-  overview: string;
-  release_date: string;
-  poster_path: string | null;
-};
+const searchQuery = ref('')
+const movies = ref([])
+const loading = ref(false)
+const error = ref('')
+const selectedWeatherType = ref('')
 
-const searchQuery = ref("");
-const movies = ref<Movie[]>([]);
-const loading = ref(false);
-const error = ref("");
-const selectedWeatherType = ref<WeatherType>("rainy");
-const currentWeatherText = ref("");
+const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN
+// Mapping of Open-Meteo weather codes to TMDb genre IDs
+const weatherCodeGenreMap = {
+  // Sunny / Clear
+  0: [35, 12, 10751],
+  1: [35, 12, 10751],
 
-const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
+  // Cloudy
+  2: [18, 35, 10749],
+  3: [18, 9648, 10749],
 
-const weatherVibeGenreMap: Record<WeatherType, number[]> = {
-    sunny: [35, 12, 10751],      // Comedy, Adventure, Family
-    hot: [28, 12, 878],          // Action, Adventure, Sci-Fi
-    rainy: [14, 16, 10751],      // Fantasy, Animation, Family
-    cold: [10749, 18, 10751],    // Romance, Drama, Family
-    snowy: [14, 10751, 16],      // Fantasy, Family, Animation
-    foggy: [9648, 53, 27],       // Mystery, Thriller, Horror
-    stormy: [53, 28, 80],        // Thriller, Action, Crime
-    cloudy: [18, 35, 10749],     // Drama, Comedy, Romance
-    windy: [12, 14, 28],         // Adventure, Fantasy, Action
-};
+  // Foggy
+  45: [9648, 53, 27],
+  48: [9648, 53, 27],
 
+  // Drizzle
+  51: [14, 16, 10751],
+  53: [14, 16, 10751],
+  55: [14, 16, 10751],
+
+  // Freezing drizzle
+  56: [53, 9648, 27],
+  57: [53, 9648, 27],
+
+  // Rain
+  61: [14, 16, 10751],
+  63: [14, 16, 10751],
+  65: [53, 80, 27],
+
+  // Freezing rain
+  66: [53, 9648, 27],
+  67: [53, 9648, 27],
+
+  // Snow
+  71: [14, 10751, 16],
+  73: [14, 10751, 16],
+  75: [14, 10751, 16],
+  77: [14, 10751, 16],
+
+  // Rain showers
+  80: [14, 16, 10751],
+  81: [14, 16, 10751],
+  82: [53, 80, 27],
+
+  // Snow showers
+  85: [14, 10751, 16],
+  86: [14, 10751, 16],
+
+  // Thunderstorms
+  95: [53, 28, 80],
+  96: [53, 28, 80],
+  99: [53, 28, 80],
+}
+// Manual mapping for weather descriptions to genres (for when user selects weather type instead of using weather code)
+const manualWeatherGenreMap = {
+  sunny: [35, 12, 10751],
+  cloudy: [18, 35, 10749],
+  rainy: [14, 16, 10751],
+  snowy: [14, 10751, 16],
+  foggy: [9648, 53, 27],
+  stormy: [53, 28, 80],
+  hot: [28, 12, 878],
+  windy: [12, 14, 28],
+}
+//basic search function to search movies by title 
 async function searchMovies() {
   if (!searchQuery.value.trim()) {
-    error.value = "Please enter a movie title.";
-    return;
+    error.value = 'Please enter a movie title.'
+    return
   }
 
-  loading.value = true;
-  error.value = "";
+  loading.value = true
+  error.value = ''
 
   try {
     const response = await fetch(
-      `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(
-        searchQuery.value
-      )}`,
+      `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(searchQuery.value)}`,
       {
         headers: {
-          accept: "application/json",
+          accept: 'application/json',
           Authorization: `Bearer ${TMDB_TOKEN}`,
         },
       }
-    );
+    )
 
     if (!response.ok) {
-      throw new Error("Could not fetch movies.");
+      throw new Error('Could not fetch movies.')
     }
 
-    const data = await response.json();
-    movies.value = data.results;
+    const data = await response.json()
+    movies.value = data.results
   } catch {
-    error.value = "Something went wrong while fetching movies.";
+    error.value = 'Something went wrong while fetching movies.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
+// fetch movies based on genre ids
+async function getMoviesByGenres(genres) {
+  const genreIds = genres.join(',')
 
-async function getMoviesByWeather(weatherType: WeatherType) {
-  const genreIds = weatherVibeGenreMap[weatherType].join(",");
-
-  loading.value = true;
-  error.value = "";
+  loading.value = true
+  error.value = ''
 
   try {
     const response = await fetch(
       `https://api.themoviedb.org/3/discover/movie?with_genres=${genreIds}&sort_by=popularity.desc&include_adult=false&language=en-US&page=1`,
       {
         headers: {
-          accept: "application/json",
+          accept: 'application/json',
           Authorization: `Bearer ${TMDB_TOKEN}`,
         },
       }
-    );
+    )
 
     if (!response.ok) {
-      throw new Error("Could not fetch movies by weather.");
+      throw new Error('Could not fetch movies by weather.')
     }
 
-    const data = await response.json();
-    movies.value = data.results;
+    const data = await response.json()
+    movies.value = data.results
   } catch {
-    error.value = "Something went wrong while fetching weather movies.";
+    error.value = 'Something went wrong while fetching weather movies.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
-
-function suggestMoviesByWeather(weatherType: WeatherType) {
-  currentWeatherText.value = `Selected weather vibe: ${weatherType}`;
-  getMoviesByWeather(weatherType);
+function getMoviesByWeatherCode(weatherCode) {
+  const genres = weatherCodeGenreMap[weatherCode] || [18, 35]
+  getMoviesByGenres(genres)
 }
 
-async function getMoviesFromCurrentLocation() {
-  loading.value = true;
-  error.value = "";
-
-  try {
-    // TODO: Open-Meteo API 
-    const placeholderWeatherType: WeatherType = "rainy";
-
-    currentWeatherText.value =
-      "Weather API placeholder: using rainy weather vibe for now.";
-
-    await getMoviesByWeather(placeholderWeatherType);
-  } catch {
-    error.value = "Could not get weather recommendations.";
-  } finally {
-    loading.value = false;
-  }
+function getMoviesByManualWeather() {
+  const genres = manualWeatherGenreMap[selectedWeatherType.value]
+  getMoviesByGenres(genres)
 }
 
-function saveToWatchlist(movie: Movie) {
-  const savedMovies: Movie[] = JSON.parse(
-    localStorage.getItem("watchlist") || "[]"
-  );
-
-  const exists = savedMovies.some(
-    (savedMovie) => savedMovie.id === movie.id
-  );
+function saveToWatchlist(movie) {
+  const savedMovies = JSON.parse(localStorage.getItem('watchlist') || '[]')
+  const exists = savedMovies.some((savedMovie) => savedMovie.id === movie.id)
 
   if (!exists) {
-    savedMovies.push(movie);
-
-    localStorage.setItem(
-      "watchlist",
-      JSON.stringify(savedMovies)
-    );
+    savedMovies.push(movie)
+    localStorage.setItem('watchlist', JSON.stringify(savedMovies))
   }
 }
+
+watch(
+  () => props.weatherCode,
+  (newWeatherCode) => {
+    if (newWeatherCode !== null && newWeatherCode !== undefined) {
+      getMoviesByWeatherCode(newWeatherCode)
+    }
+  }
+)
 </script>
 
 <template>
-  <section class="movie-container">
-    <h1 class="page-title">MovieWeather</h1>
-
-    <div class="description">
-      Get movie recommendations based on your local weather or choose a weather type manually.
+  <section class="container-fluid bg-white text-center py-4">
+    <div class="p-4 mb-4 fs-5">
+      <h3>
+        Get movie recommendations based on your weather
+      </h3>
     </div>
 
+    <div v-if="props.coords" class="bg-success-subtle rounded p-3 mb-4 weather-summary">
+      <p class="mb-1 fw-semibold">
+        Weather 
+      </p>
 
-    <div class="control-panel">
-      <select v-model="selectedWeatherType">
-        <option value="sunny">Sunny</option>
-        <option value="rainy">Rainy</option>
-        <option value="cold">Cold</option>
-        <option value="snowy">Snowy</option>
-        <option value="foggy">Foggy</option>
-        <option value="stormy">Stormy</option>
-        <option value="cloudy">Cloudy</option>
-        <option value="hot">Hot</option>
-        <option value="windy">Windy</option>
-      </select>
+      <p v-if="weatherDescription" class="mb-1">
+        Type: {{ weatherDescription }}
+      </p>
 
-      <button
-        class="weather-btn"
-        @click="suggestMoviesByWeather(selectedWeatherType)"
-      >
-        Weather Type
-      </button>
     </div>
 
-    <div class="location-panel">
-      <button
-        class="weather-btn"
-        @click="getMoviesFromCurrentLocation"
-      >
-        Use My Location
-      </button>
-    </div>
+    <div class="row justify-content-center g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <select
+          v-model="selectedWeatherType"
+          class="form-select form-select-lg"
+        >
+          <option value="" disabled selected hidden>Choose a weather...</option>
+          <option value="sunny">Sunny</option>
+          <option value="cloudy">Cloudy</option>
+          <option value="rainy">Rainy</option>
+          <option value="snowy">Snowy</option>
+          <option value="foggy">Foggy</option>
+          <option value="stormy">Stormy</option>
+          <option value="hot">Hot</option>
+          <option value="windy">Windy</option>
+        </select>
+      </div>
 
-    <p v-if="currentWeatherText">
-      {{ currentWeatherText }}
-    </p>
-
-    <div class="search-section">
-      <h2>Search manually</h2>
-
-      <form class="search-form" @submit.prevent="searchMovies">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search for a movie..."
-        />
-
-        <button type="submit">
-          Search
+      <div class="col-12 col-md-auto">
+        <button
+          class="btn btn-success btn-lg w-100"
+          @click="getMoviesByManualWeather"
+        >
+          Choose Weather Type
         </button>
+      </div>
+    </div>
+
+    <div class="p-4 mb-4">
+      <h3 class="movie-title mb-4">
+        Or just Search movies
+      </h3>
+
+      <form
+        class="row justify-content-center g-3"
+        @submit.prevent="searchMovies"
+      >
+        <div class="col-12 col-md-5">
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="form-control form-control-lg"
+            placeholder="Search for a movie..."
+          >
+        </div>
+
+        <div class="col-12 col-md-auto">
+          <button
+            class="btn btn-success btn-lg w-100"
+            type="submit"
+          >
+            Search
+          </button>
+        </div>
       </form>
     </div>
 
-    <p v-if="loading">Loading movies...</p>
-    <p v-if="error">{{ error }}</p>
+    <p v-if="loading" class="fs-5">
+      Loading
+    </p>
 
-    <div class="movie-list">
-      <MovieCard
+    <p v-if="error" class="text-danger fs-5">
+      {{ error }}
+    </p>
+
+    <div class="row g-4 px-3">
+      <div
         v-for="movie in movies"
         :key="movie.id"
-        :movie="movie"
-        @save="saveToWatchlist"
-      />
+        class="col-12 col-sm-6 col-lg-4 col-xl-3"
+      >
+        <MovieCard
+          :movie="movie"
+          @save="saveToWatchlist"
+        />
+      </div>
     </div>
   </section>
 </template>
+
 <style scoped>
-.movie-container {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
+h3 {
+  font-family: Georgia, serif;
 }
 
-.page-title {
-  text-align: center;
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.description {
-  text-align: center;
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-}
-
-.control-panel {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.location-panel {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-.weather-btn {
-  background: #008979;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-}
-
-.weather-btn:hover {
-  background: #1f75e8;
-}
-
-.search-section {
-  background: #f8f9fa;
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin: 2rem 0;
-}
-
-.search-section h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 1rem;
-}
-
-.search-form {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.search-form input {
-  width: 300px;
-  padding: 0.8rem;
-}
-
-.search-form button {
-  background: #008979;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.8rem 1.5rem;
-  cursor: pointer;
-}
-
-.movie-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+.weather-summary {
+  max-width: 15%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 768px) {
-  .control-panel,
-  .search-form {
-    flex-direction: column;
-    align-items: center;
+  .display-2 {
+    font-size: 2.4rem;
   }
+}
 
-  .search-form input {
-    width: 100%;
-  }
-
-  .movie-list {
-    grid-template-columns: 1fr;
+@media (max-width: 480px) {
+  .display-2 {
+    font-size: 2rem;
   }
 }
 </style>
