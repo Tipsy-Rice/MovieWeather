@@ -115,7 +115,7 @@ watch(
 <template>
   <section class="text-center my-4">
     <button
-      class="btn btn-success btn-lg"
+      class="btn btn-success btn-lg "
       @click="emit('request-location')"
     >
       Use My Location

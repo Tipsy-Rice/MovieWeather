@@ -45,6 +45,7 @@ function handleWeatherLoaded(weather) {
     />
 
     <MovieSearch
+      :coords="coords"
       :weather-code="weatherCode" 
       :weather-description="weatherDescription"
       :temperature="temperature"
